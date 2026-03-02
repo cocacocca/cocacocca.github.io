@@ -1,0 +1,265 @@
+/* 引入极客专用的等宽字体 */
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+
+:root {
+    --neon: #00ff88;
+    --neon-dim: rgba(0, 255, 136, 0.3);
+    --dark: #020202;
+    --glitch-speed: 0.2s;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 核心容器：允许 300vh 的滚动空间来触发 Portal/TaiChi 状态切换 */
+body {
+    background: var(--dark);
+    color: var(--neon);
+    font-family: 'Space Mono', monospace;
+    height: 300vh;
+    overflow-x: hidden;
+    cursor: crosshair;
+    transition: filter 0.5s ease;
+}
+
+/* 时停视觉反馈：灰度、高对比度、轻微模糊 */
+body.time-stopped {
+    filter: grayscale(1) contrast(2) brightness(0.8) blur(1px);
+}
+
+/* Three.js 画布容器 */
+#canvas-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1;
+}
+
+/* CRT 模拟滤镜：提供扫描线、暗角和微弱的噪点 */
+#crt-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), 
+        linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05));
+    background-size: 100% 4px, 4px 100%;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+/* 模拟屏幕边缘的微弱闪烁 */
+#crt-overlay::after {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: rgba(18, 16, 16, 0.03);
+    opacity: 0;
+    z-index: 101;
+    pointer-events: none;
+    animation: flicker 0.15s infinite;
+}
+
+@keyframes flicker {
+    0% { opacity: 0.1; }
+    100% { opacity: 0.2; }
+}
+
+/* UI 控制层 */
+#ui-layer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 50;
+    padding: 4rem;
+    pointer-events: none; /* 穿透到 Canvas */
+}
+
+#content {
+    pointer-events: auto;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    max-width: 900px;
+}
+
+/* GitHub 引流节点 */
+.external-nodes {
+    position: absolute;
+    top: 2rem;
+    right: 3rem;
+    pointer-events: auto;
+}
+
+.github-terminal-link {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    color: var(--neon);
+    text-decoration: none;
+    font-size: 0.7rem;
+    border: 1px solid var(--neon-dim);
+    padding: 0.6rem 1.2rem;
+    background: rgba(0, 10, 5, 0.6);
+    backdrop-filter: blur(10px);
+    transition: 0.3s;
+}
+
+.github-terminal-link:hover {
+    background: var(--neon);
+    color: var(--dark);
+    box-shadow: 0 0 25px var(--neon);
+}
+
+/* 系统信息栏 */
+header .sys-info {
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    margin-bottom: 3rem;
+    text-transform: uppercase;
+}
+
+/* 导航系统 */
+nav {
+    display: flex;
+    gap: 2.5rem;
+    margin-bottom: 5rem;
+    pointer-events: auto;
+}
+
+nav a {
+    color: var(--neon);
+    text-decoration: none;
+    font-size: 0.85rem;
+    opacity: 0.4;
+    transition: 0.4s;
+    font-weight: bold;
+}
+
+nav a.active, nav a:hover {
+    opacity: 1;
+    text-shadow: 0 0 15px var(--neon);
+    letter-spacing: 3px;
+}
+
+/* 页面模块展示 */
+section {
+    display: none;
+    animation: scanReveal 1s ease-out forwards;
+}
+
+section.active {
+    display: block;
+}
+
+@keyframes scanReveal {
+    from { clip-path: inset(0 100% 0 0); opacity: 0; }
+    to { clip-path: inset(0 0 0 0); opacity: 1; }
+}
+
+/* 标题故障效果 (Glitch) */
+h1 {
+    font-size: 6rem;
+    letter-spacing: -4px;
+    position: relative;
+}
+
+.glitch-text::before, .glitch-text::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    opacity: 0.8;
+}
+
+.glitch-text::before {
+    color: #f0f;
+    z-index: -1;
+    animation: glitch --glitch-speed cubic-bezier(.25, .46, .45, .94) both infinite;
+}
+
+.glitch-text::after {
+    color: #0ff;
+    z-index: -2;
+    animation: glitch --glitch-speed cubic-bezier(.25, .46, .45, .94) reverse both infinite;
+}
+
+@keyframes glitch {
+    0% { transform: translate(0); }
+    20% { transform: translate(-3px, 3px); }
+    40% { transform: translate(-3px, -3px); }
+    60% { transform: translate(3px, 3px); }
+    80% { transform: translate(3px, -3px); }
+    100% { transform: translate(0); }
+}
+
+/* 项目卡片设计 */
+.project-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.project-card {
+    border: 1px solid var(--neon-dim);
+    padding: 2rem;
+    background: rgba(0, 255, 136, 0.02);
+    transition: 0.4s;
+}
+
+.project-card:hover {
+    border-color: var(--neon);
+    background: rgba(0, 255, 136, 0.08);
+    transform: scale(1.02);
+}
+
+.execute-btn {
+    display: inline-block;
+    margin-top: 1.5rem;
+    color: var(--dark);
+    background: var(--neon);
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
+/* 自定义滚动条 (隐藏但保留功能) */
+::-webkit-scrollbar {
+    width: 0px;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    h1 { font-size: 3.5rem; }
+    .project-grid { grid-template-columns: 1fr; }
+    #ui-layer { padding: 2rem; }
+}
+
+/* 优化背景固定感 */
+#canvas-container {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 1;
+    background: #000; /* 绝对纯黑背景 */
+}
+
+/* 调细扫描线，使其更隐秘 */
+#crt-overlay {
+    background: 
+        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%), 
+        linear-gradient(90deg, rgba(0, 255, 0, 0.01), rgba(0, 0, 0, 0.02));
+    background-size: 100% 2px, 2px 100%;
+    opacity: 0.9;
+}

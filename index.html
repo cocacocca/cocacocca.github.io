@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>cocacocca | Architect of Reality</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="crt-overlay"></div>
+    
+    <div id="ui-layer">
+        <div class="external-nodes">
+            <a href="https://github.com/cocacocca" target="_blank" class="github-terminal-link">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                </svg>
+                <span class="link-text">[ REPOSITORY_ACCESS ]</span>
+            </a>
+        </div>
+
+        <header>
+            <div class="sys-info">OS: ARCHITECT_OS_V4 // SECTOR: REALITY // USER: COCACOCCA</div>
+        </header>
+        
+        <nav id="navigation">
+            <a href="#" data-target="identity" class="active">[ IDENTITY ]</a>
+            <a href="#" data-target="philosophy">[ PHILOSOPHY ]</a>
+            <a href="#" data-target="skills">[ SKILLS ]</a>
+            <a href="#" data-target="projects">[ PROJECTS ]</a>
+        </nav>
+        
+        <main id="content">
+            <section id="identity" class="active">
+                <h1 class="glitch-text" data-text="COCACOCCA">COCACOCCA</h1>
+                <p class="dimmed">Data Visualization & Creative Development</p>
+                <div class="terminal-prompt">
+                    > Long-Press Left (1.5s): Speed Up Flow<br>
+                    > Long-Press Right (3s): Oneness & Cosmic Explosion
+                </div>
+            </section>
+            
+            <section id="philosophy">
+                <h2>THE_VOID_LOGIC</h2>
+                <p>"The code is the law. The data is the flesh."</p>
+                <p class="dimmed">Seeking the oneness through binary chaos.</p>
+            </section>
+
+            <section id="skills">
+                <h2>NEURAL_INTERFACE</h2>
+                <ul class="skill-list">
+                    <li>> DEEP_LEARNING: Models as thought extensions.</li>
+                    <li>> GPGPU: Using graphics cards for pure logic.</li>
+                    <li>> SHADERS: Painting with mathematics.</li>
+                </ul>
+            </section>
+
+            <section id="projects">
+                <h2>ACTIVE_NODES</h2>
+                <div class="project-grid">
+                    <article class="project-card">
+                        <h3>> AI_PROXY_HUB</h3>
+                        <p>Bridging local LLMs to VSCode workflows.</p>
+                        <a href="https://github.com/cocacocca" target="_blank" class="execute-btn">> SYNC_SOURCE</a>
+                    </article>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script id="rain-fragment" type="x-shader/x-fragment">
+        uniform float time;
+        uniform float timeScale;
+        varying vec2 vUv;
+
+        // 高频伪随机
+        float hash(vec2 p) {
+            p = fract(p * vec2(123.34, 456.21));
+            p += dot(p, p + 45.32);
+            return fract(p.x * p.y);
+        }
+
+        // 绘制 Matrix 风格的 0 和 1 (极其纤细且带有数字感)
+        float drawBinary(vec2 uv, float charId) {
+            // 缩放坐标，让字符变窄长 (原著比例)
+            uv = (uv - 0.5) * vec2(1.5, 0.8) + 0.5; 
+            if(uv.x < 0.2 || uv.x > 0.8 || uv.y < 0.1 || uv.y > 0.9) return 0.0;
+            
+            if (charId > 0.5) { // 字符 1
+                return (abs(uv.x - 0.5) < 0.04) ? 1.0 : 0.0;
+            } else { // 字符 0
+                float d = max(abs(uv.x - 0.5) * 1.5, abs(uv.y - 0.5));
+                return (d > 0.3 && d < 0.4) ? 1.0 : 0.0;
+            }
+        }
+
+        void main() {
+            // 增加网格密度，字符更小
+            vec2 grid = vec2(120.0, 60.0);
+            vec3 finalColor = vec3(0.0);
+
+            // 渲染两层：背景（暗且慢）和前景（亮且快）
+            for(float layer = 1.0; layer <= 2.0; layer++) {
+                vec2 lGrid = grid * (layer * 0.6); // 第二层网格略大
+                vec2 st = vUv * lGrid;
+                vec2 ipos = floor(st);
+                vec2 fpos = fract(st);
+
+                float rand = hash(vec2(ipos.x, layer * 10.0));
+                float speed = (rand * 0.4 + 0.2) * timeScale * (layer * 0.8);
+                
+                // 每一个字符的垂直偏移
+                float y = fract(st.y / lGrid.y + time * speed + rand);
+                
+                // 字符随时间快速闪烁切换
+                float charChange = hash(ipos + floor(time * 15.0 * timeScale));
+                float char = drawBinary(fpos, charChange);
+
+                // 核心：Matrix 拖尾算法
+                // 头部（y 接近 0 的地方）最亮
+                float head = smoothstep(0.03, 0.0, abs(y - 0.01));
+                // 拖尾（指数级衰减）
+                float tail = pow(1.0 - y, 7.0) * 0.7;
+                
+                float intensity = char * (head * 2.5 + tail); // 头部超过 1.0 实现白色高亮
+                
+                // 颜色：标准 Matrix 绿
+                vec3 layerColor = vec3(0.0, 1.0, 0.3) * intensity;
+                // 头部泛白
+                layerColor = mix(layerColor, vec3(0.8, 1.0, 0.9), head * char);
+
+                finalColor += layerColor * (1.0 / layer); // 远处的层变暗
+            }
+
+            gl_FragColor = vec4(finalColor, length(finalColor));
+        }
+    </script>
+
+    <script id="compute-velocity" type="x-shader/x-compute">
+        uniform float time;
+        uniform float timeScale;
+        uniform float chaos;
+        uniform vec3 mouse;
+        
+        void main() {
+            vec2 uv = gl_FragCoord.xy / resolution.xy;
+            vec3 pos = texture2D(texturePosition, uv).xyz;
+            vec3 vel = texture2D(textureVelocity, uv).xyz;
+            vec3 target = texture2D(textureTarget, uv).xyz;
+            
+            vec3 dir = target - pos;
+            float d = length(dir);
+            // 物理引力逻辑
+            vec3 force = normalize(dir) * d * (0.08 + chaos * 0.1);
+            
+            // 爆炸时排斥逻辑
+            if (chaos > 0.5) {
+                force = -normalize(dir) * 5.0; // 瞬间反弹炸开
+            }
+
+            vel += force * 0.02 * timeScale;
+            // 摩擦力：爆炸时摩擦力降低，使粒子飞得更远
+            vel *= mix(0.92, 0.98, chaos); 
+            
+            gl_FragColor = vec4(vel, 1.0);
+        }
+    </script>
+
+    <script id="compute-position" type="x-shader/x-compute">
+        uniform float timeScale;
+        void main() {
+            vec2 uv = gl_FragCoord.xy / resolution.xy;
+            vec3 pos = texture2D(texturePosition, uv).xyz;
+            vec3 vel = texture2D(textureVelocity, uv).xyz;
+            gl_FragColor = vec4(pos + vel * timeScale, 1.0);
+        }
+    </script>
+
+    <script id="particle-vertex" type="x-shader/x-vertex">
+        uniform sampler2D texturePosition;
+        varying float vAlpha;
+        void main() {
+            vec4 pos = texture2D(texturePosition, uv);
+            vec4 mvPosition = modelViewMatrix * vec4(pos.xyz, 1.0);
+            gl_PointSize = (4.0 / -mvPosition.z); // 缩小粒子尺寸
+            vAlpha = smoothstep(50.0, 0.0, length(pos.xyz)); // 边缘消散
+            gl_Position = projectionMatrix * mvPosition;
+        }
+    </script>
+
+    <script id="particle-fragment" type="x-shader/x-fragment">
+        varying float vAlpha;
+        void main() {
+            if (length(gl_PointCoord - 0.5) > 0.5) discard;
+            gl_FragColor = vec4(0.0, 1.0, 0.5, vAlpha);
+        }
+    </script>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>
